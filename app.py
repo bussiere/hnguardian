@@ -7,7 +7,7 @@ from time import sleep
 import requests
 
 SERVER = 'irc.freenode.com'
-CHANNEL = '#hackernews'
+CHANNEL = '#hackernewstest'
 BOT_NICK = 'hnguardian'
 db = MongoClient().hnguardian
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,9 +51,7 @@ def link(sender, args):
     elif not person['registered']:
         pm(sender, '''Your Freenode nick must be registered before
                    linking your Hacker News account or others could
-                   spoof it. If you beleive this is a mistake and
-                   your Freenode nick IS registered, try linking it
-                   again in a few seconds.''')
+                   spoof it.''')
 
     else:
         pm(sender, 'Add the string "irc:' + args[0] + ''':irc" to
@@ -95,6 +93,7 @@ while 1:
 
     for line in text:
         words = line.split()
+        print(words)
         if len(words) < 2:
             break
 
@@ -141,6 +140,14 @@ while 1:
                              nick so others can recognize you:''')
                     pm(nick, '/msg hnguardian link <HN username>')
 
+            elif sender == 'NickServ' and ''.join(args) == 'isnotregistered.':
+                nick = re.search('\x02(.+)\x02', command).group(1)
+                person = db.people.find_one({'nick': nick})
+
+                if person and person['infolink']:
+                    pm(nick, '''Your Freenode nick must be registered before
+                             linking your Hacker News account or others could
+                             spoof it.''')
 
             elif command == 'link' and to == BOT_NICK and len(args) == 1:
                 link(sender, args)
