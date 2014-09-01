@@ -46,7 +46,7 @@ def link(sender, args):
         pm(sender, '''Link to edit bio:
                    https://news.ycombinator.com/user?id=''' + args[0])
         sleep(30)
-        r = requests.get('https://news.ycombinator.com/user?id=' + args[0])
+        r = requests.get('https://hn.algolia.com/api/v1/users/' + args[0])
         bio_nick = re.search('irc:(.+):irc', r.text)
 
         if bio_nick:
