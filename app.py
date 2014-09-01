@@ -97,7 +97,7 @@ while 1:
             break
 
         if words[0] == 'PING':
-            irc.send(b('PONG ' + line[1] + '\r\n'))
+            irc.send(b('PONG ' + words[1] + '\r\n'))
 
         elif words[1] == 'JOIN':
             nick = re.search(':(.+)!', words[0]).group(1).lower()
