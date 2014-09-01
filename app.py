@@ -145,7 +145,7 @@ while 1:
             elif command == '!username' and to == CHANNEL and len(args) == 1:
                 name = db.people.find_one({'nick': args[0]})
 
-                if name:
+                if name and 'username' in name:
                     pm(CHANNEL, args[0] + "'s Hacker News username is "
                                 + name['username'])
 
