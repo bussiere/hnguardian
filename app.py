@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from threading import Thread
 from time import sleep
 import requests
+import json
 
 SERVER = 'irc.freenode.com'
 CHANNEL = '#hackernews'
@@ -13,26 +14,10 @@ db = MongoClient().hnguardian
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 def action(text):
-    irc.send(b('PRIVMSG ' + CHANNEL + ' :\x01ACTION ' + text + '\x01\r\n'))
+    irc.send(b('PRIVMSG ' + CHANNEL + ' :\x01ACTION ' + ' '.join(text.split()) + '\x01\r\n'))
 
 def pm(to, text):
     irc.send(b('PRIVMSG ' + to + ' :' + ' '.join(text.split()) + ' \r\n'))
-
-def share_show(last_show):
-    show = requests.get(
-        'https://hn.algolia.com/api/v1/search_by_date',
-        params={'tags': 'show_hn', 'hitsPerPage': 1}
-    )
-    
-    if show.status_code == 200:
-        show = show.json()['hits'][0]
-
-        if show['created_at'] != last_show:
-            action('[@' + show['author'] + '] ' + show['title'])
-            action('https://news.ycombinator.com/item?id=' + show['objectID'])
-
-    sleep(5)
-    share_show(show['created_at'])
 
 def b(string):
     return bytes(string, 'utf-8')
@@ -88,7 +73,6 @@ irc.connect((SERVER, 6667))
 irc.send(b('USER ' + ' '.join(BOT_NICK) + ' :beep boop\n'))
 irc.send(b('NICK ' + BOT_NICK + '\n'))
 irc.send(b('JOIN ' + CHANNEL + '\n'))
-Thread(target=share_show, args=['']).start()
 
 while 1:
     text = irc.recv(2040).decode('utf-8').split('\n')
@@ -169,3 +153,22 @@ while 1:
                     pm(CHANNEL, args[0] + """ hasn't linked their Hacker News
                                 username to their Freenode nick yet:""")
                     pm(CHANNEL, '/msg hnguardian link <HN username>')
+
+            elif command == 'show' and to == CHANNEL and len(args) == 0:
+                show = requests.get(
+                    'https://hn.algolia.com/api/v1/search_by_date',
+                    params={'tags': 'show_hn', 'hitsPerPage': 1}
+                ).json()['hits'][0]
+
+                url = requests.post(
+                    'https://www.googleapis.com/urlshortener/v1/url',
+                    data=json.dumps({'longUrl': show['url']}),
+                    headers={'content-type': 'application/json'}
+                ).json()
+
+                if 'kind' in url and url['kind'] == 'urlshortener#url':
+                    action('[@' + show['author'] + '] ' + show['title'] + '''
+                           (''' + url['id'] + ')')
+
+                else:
+                    action('[@' + show['author'] + '] ' + show['title'])
