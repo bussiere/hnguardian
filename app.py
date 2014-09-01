@@ -48,7 +48,7 @@ def link(sender, args):
         )
         pm('nickserv', 'info ' + sender)
 
-    elif not person['registered']:
+    elif not 'registered' in person:
         pm(sender, '''Your Freenode nick must be registered before
                    linking your Hacker News account or others could
                    spoof it.''')
@@ -103,7 +103,7 @@ while 1:
             nick = re.search(':(.+)!', words[0]).group(1).lower()
             person = db.people.find_one({'nick': nick})
 
-            if not person or not person['username']:
+            if not person or not 'username' in person:
                 pm('nickserv', 'info ' + nick)
                 # We'll receive a PM from nickserv letting us know if the nick
                 # is registered. This code is below.
@@ -130,7 +130,7 @@ while 1:
                 )
 
                 if person and person['infolink']:
-                    link(nick, [person['infolink']])
+                    Thread(target=link, args=(nick, [person['infolink']])).start()
 
                 else:
                     pm(nick, '''Welcome to #hackernews! Our database doesn't
@@ -149,7 +149,7 @@ while 1:
                              spoof it.''')
 
             elif command == 'link' and to == BOT_NICK and len(args) == 1:
-                link(sender, args)
+                Thread(target=link, args=(sender, args)).start()
 
             elif command == 'username' and to == CHANNEL and len(args) == 1:
                 name = db.people.find_one({'username': args[0]})
