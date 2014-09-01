@@ -142,7 +142,7 @@ while 1:
             elif command == 'link' and to == BOT_NICK and len(args) == 1:
                 Thread(target=link, args=(sender.lower(), args)).start()
 
-            elif command == 'username' and to == CHANNEL and len(args) == 1:
+            elif command == '!username' and to == CHANNEL and len(args) == 1:
                 name = db.people.find_one({'nick': args[0]})
 
                 if name:
@@ -154,7 +154,7 @@ while 1:
                                 username to their Freenode nick yet:""")
                     pm(CHANNEL, '/msg hnguardian link <HN username>')
 
-            elif command == 'show' and to == CHANNEL and len(args) == 0:
+            elif command == '!show' and to == CHANNEL and len(args) == 0:
                 show = requests.get(
                     'https://hn.algolia.com/api/v1/search_by_date',
                     params={'tags': 'show_hn', 'hitsPerPage': 1}
