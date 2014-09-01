@@ -125,9 +125,7 @@ while 1:
 
                 db.people.update(
                     {'nick': nick},
-                    {'$set':
-                        {'nick': nick, 'registered': True, 'infolink': False}
-                    },
+                    {'$set': {'registered': True, 'infolink': False}},
                     True
                 )
 
@@ -151,6 +149,11 @@ while 1:
                     pm(nick, '''Your Freenode nick must be registered before
                              linking your Hacker News account or others could
                              spoof it.''')
+                    db.people.update(
+                        {'nick': nick},
+                        {'$set': {'infolink': False}},
+                        True
+                    )
 
             elif command == 'link' and to == BOT_NICK and len(args) == 1:
                 Thread(target=link, args=(sender.lower(), args)).start()
