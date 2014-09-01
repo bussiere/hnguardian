@@ -58,6 +58,8 @@ def link(sender, args):
                    your HN bio. If our system sees it in 30 seconds
                    your Hacker News account will be linked to your
                    Freenode nick! (You can delete it after).''')
+        pm(sender, '''Link to edit bio:
+                   https://news.ycombinator.com/user?id=''' + args[0])
         sleep(30)
         r = requests.get('https://news.ycombinator.com/user?id=' + args[0])
         bio_nick = re.search('irc:(.+):irc', r.text)
