@@ -7,7 +7,7 @@ from time import sleep
 import requests
 
 SERVER = 'irc.freenode.com'
-CHANNEL = '#hackernews'
+CHANNEL = '#hackernewstest'
 BOT_NICK = 'hnguardian'
 db = MongoClient().hnguardian
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -38,11 +38,11 @@ def b(string):
     return bytes(string, 'utf-8')
 
 def link(sender, args):
-    person = db.people.find_one({'nick': sender.lower()})
+    person = db.people.find_one({'nick': sender})
 
     if not person:
         db.people.update(
-            {'nick': sender.lower()},
+            {'nick': sender},
             {'$set': {'infolink': args[0]}},
             True
         )
@@ -63,9 +63,9 @@ def link(sender, args):
         bio_nick = re.search('irc:(.+):irc', r.text)
         
         if bio_nick:
-            bio_nick = bio_nick.group(1).lower()
+            bio_nick = bio_nick.group(1)
 
-            if bio_nick == sender.lower():
+            if bio_nick == sender:
                 db.people.update(
                     {'nick': sender},
                     {'$set': {'username': args[0]}},
@@ -93,6 +93,7 @@ while 1:
 
     for line in text:
         words = line.split()
+        print(words)
         if len(words) < 2:
             break
 
@@ -118,7 +119,7 @@ while 1:
                 # We asked NickServ about a nick that isn't in our db yet. The
                 # nick is registered so we can ask them to link their HN
                 # account.
-                nick = re.search('\x02(.+)\x02', args[1]).group(1)
+                nick = re.search('\x02(.+)\x02', args[1]).group(1).lower()
                 person = db.people.find_one({'nick': nick})
 
                 db.people.update(
@@ -130,7 +131,9 @@ while 1:
                 )
 
                 if person and person['infolink']:
-                    Thread(target=link, args=(nick, [person['infolink']])).start()
+                    Thread(target=link, args=(
+                        nick, [person['infolink']])
+                    ).start()
 
                 else:
                     pm(nick, '''Welcome to #hackernews! Our database doesn't
@@ -140,7 +143,7 @@ while 1:
                     pm(nick, '/msg hnguardian link <HN username>')
 
             elif sender == 'NickServ' and ''.join(args) == 'isnotregistered.':
-                nick = re.search('\x02(.+)\x02', command).group(1)
+                nick = re.search('\x02(.+)\x02', command).group(1).lower()
                 person = db.people.find_one({'nick': nick})
 
                 if person and person['infolink']:
@@ -149,7 +152,7 @@ while 1:
                              spoof it.''')
 
             elif command == 'link' and to == BOT_NICK and len(args) == 1:
-                Thread(target=link, args=(sender, args)).start()
+                Thread(target=link, args=(sender.lower(), args)).start()
 
             elif command == 'username' and to == CHANNEL and len(args) == 1:
                 name = db.people.find_one({'username': args[0]})
