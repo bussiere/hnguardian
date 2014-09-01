@@ -54,14 +54,14 @@ def link(sender, args):
                    spoof it.''')
 
     else:
-        pm(sender, 'Add the string "irc:' + args[0] + ''':irc" to
+        pm(sender, 'Add the string "irc:' + sender + ''':irc" to
                    your HN bio. If our system sees it in 30 seconds
                    your Hacker News account will be linked to your
                    Freenode nick! (You can delete it after).''')
         sleep(30)
         r = requests.get('https://news.ycombinator.com/user?id=' + args[0])
         bio_nick = re.search('irc:(.+):irc', r.text)
-        
+
         if bio_nick:
             bio_nick = bio_nick.group(1)
 
