@@ -159,7 +159,7 @@ while 1:
                 Thread(target=link, args=(sender.lower(), args)).start()
 
             elif command == 'username' and to == CHANNEL and len(args) == 1:
-                name = db.people.find_one({'username': args[0]})
+                name = db.people.find_one({'nick': args[0]})
 
                 if name:
                     pm(CHANNEL, args[0] + "'s Hacker News username is "
