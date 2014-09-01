@@ -7,7 +7,7 @@ from time import sleep
 import requests
 
 SERVER = 'irc.freenode.com'
-CHANNEL = '#hackernewstest'
+CHANNEL = '#hackernews'
 BOT_NICK = 'hnguardian'
 db = MongoClient().hnguardian
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -93,7 +93,6 @@ while 1:
 
     for line in text:
         words = line.split()
-        print(words)
         if len(words) < 2:
             break
 
